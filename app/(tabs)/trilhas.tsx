@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useState } from 'react'; // Para gerenciar a lista de novelas
-import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native'; // FlatList e TouchableOpacity
+import { StyleSheet, TouchableOpacity } from 'react-native'; // FlatList e TouchableOpacity
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
@@ -8,24 +8,24 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, useRouter } from 'expo-router'; // useRouter para navegação manual 
 
-interface Novela {
+interface trilhas {
   id: string;
-  titulo: string;
-  anoLancamento: string;
-  autor: string;
-  emissora: string;
+  tipo: 'Nacional' | 'Internacional'; 
+  capaAlbum: string;
+  destaques: string;
+  novelaId: string;
 }
 
-export default function TelevisionScreen() {
+export default function TrilhasScreen() {
   const router = useRouter();
 
   // Dados iniciais para teste (Mock)
-  const [novelas, setNovelas] = useState<Novela[]>([
-    { id: '1', titulo: 'Tieta', anoLancamento: '1989', autor: 'Aguinaldo Silva', emissora: 'TV Globo' },
-    { id: '2', titulo: 'O Clone', anoLancamento: '2001', autor: 'Glória Perez', emissora: 'TV Globo' },
-    { id: '3', titulo: 'O Dono do Mundo', anoLancamento: '1991', autor: 'Gilberto Braga', emissora: 'TV Globo' },
-    { id: '4', titulo: 'Olho no Olho', anoLancamento: '1993', autor: 'Antônio Calmon', emissora: 'TV Globo' },
-    { id: '5', titulo: 'A Proxima Vitima', anoLancamento: '1995', autor: 'Silvio de Abreu', emissora: 'TV Globo' },
+  const [trilhas, setTrilhas] = useState<trilhas[]>([
+    { id: '1', tipo: 'Nacional', capaAlbum: 'https://observatoriodatv.com.br/teledramaturgia/wp-content/uploads/2015/02/tietat1.jpg', destaques: 'Tieta - Luis Caldas; No Rancho Fundo - Chitãozinho & Xororó; Eu e Você - Roupa Nova ft José Augusto', novelaId: '1' },
+    { id: '2', tipo: 'Internacional', capaAlbum: 'https://observatoriodatv.com.br/teledramaturgia/wp-content/uploads/2015/02/clonet2-2.jpg', destaques: 'Luna - Alessandro Safina; Whenever, Whenever - Shakira; My Lovers Gone - Dido', novelaId: '2' },
+    { id: '3', tipo: 'Internacional', capaAlbum: 'https://observatoriodatv.com.br/teledramaturgia/wp-content/uploads/2015/10/donot1.jpg', destaques: 'Unforgettable – Natalie Cole & Nat King Cole; Cry for Help – Rick Astley; You Are Everything - Rod Stewart', novelaId: '3' },
+    { id: '4', tipo: 'Internacional', capaAlbum: 'https://observatoriodatv.com.br/teledramaturgia/wp-content/uploads/2015/10/olhonoolhot2.jpg', destaques: 'Whats Up? – 4 Non Blondes; How You Gonna See Me Now – Easy Rider; Cose Della Vitta – Eros Ramazzotti', novelaId: '4' },
+    { id: '5', tipo: 'Nacional', capaAlbum: 'https://observatoriodatv.com.br/teledramaturgia/wp-content/uploads/2015/02/proximavitt1.jpg', destaques: 'Sereia – Lulu Santos; Vítima – Rita Lee & Roberto de Carvalho; Catedral (CATHEDRAL SONG) – Zélia Duncan', novelaId: '5' },
 
   ]);
 
@@ -41,45 +41,37 @@ export default function TelevisionScreen() {
 
       {/* Cabeçalho de Boas-vindas */}
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">*Bem-Vindo a NetoTV!</ThemedText>
+        <ThemedText type="title">Trilhas Sonoras!</ThemedText>
         <HelloWave />
       </ThemedView>
 
-      {/* Botão para Criar Nova Novela */}
+      
       <ThemedView style={styles.stepContainer}>
-        <Link href="/modal" asChild>
+        <Link href="/modalt" asChild>
           <TouchableOpacity style={styles.button}>
             <ThemedText type="defaultSemiBold" style={{ color: '#FFF' }}>
-              *+ Registrar Nova Obra
+              + Registrar Nova Trilha
             </ThemedText>
           </TouchableOpacity>
         </Link>
       </ThemedView>
 
       <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">*Sua Central de Consulta</ThemedText>
-        <ThemedText>*Confira as novelas cadastradas no acervo:</ThemedText>
+        <ThemedText type="subtitle">Sua Biblioteca Musical</ThemedText>
+        <ThemedText>*Confira a trilha da sua novela preferida:</ThemedText>
       </ThemedView>
 
       {/* Listagem de Objetos (O "R" do CRUD) */}
-      {novelas.map((item) => (
+      {trilhas.map((item) => (
         <ThemedView key={item.id} style={styles.card}>
-          <ThemedText type="defaultSemiBold">{item.titulo}</ThemedText>
-          <ThemedText>{item.emissora} | {item.anoLancamento}</ThemedText>
-          <ThemedText style={styles.autorText}>Autor: {item.autor}</ThemedText>
+          <ThemedText type="defaultSemiBold">{item.tipo}</ThemedText>
+          <ThemedText>{item.destaques} | {item.novelaId}</ThemedText>
 
-          {/* Link para expandir/ver trilhas no futuro */}
-          <TouchableOpacity onPress={() => alert(`Abrir trilhas de ${item.titulo}`)}>
-            <ThemedText style={styles.linkText}>Ver Trilhas Sonoras</ThemedText>
-          </TouchableOpacity>
         </ThemedView>
       ))}
-      
-    </ParallaxScrollView>
-  
-  );
 
-  
+    </ParallaxScrollView>
+  );
 }
 
 const styles = StyleSheet.create({

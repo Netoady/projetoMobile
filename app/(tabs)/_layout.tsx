@@ -37,6 +37,16 @@ export default function TabLayout() {
           title: 'TV',
           tabBarIcon: ({ color }) => <Ionicons name="tv-outline" size={28} color={color} />,
         }}
+        
+      />
+
+      <Tabs.Screen
+        name="trilha sonora"
+        options={{
+          title: 'trilha',
+          tabBarIcon: ({ color }) => <Ionicons name="disc-outline" size={28} color={color} />,
+        }}
+        
       />
     </Tabs>
   );

@@ -28,7 +28,7 @@ export default function ModalScreen() {
     <ThemedView style={styles.container}>
       <ThemedText type="title">Registrar Obra</ThemedText>
 
-      {/* Campos de Input seguindo seu planejamento */}
+      {/* Campos de Input */}
       <ThemedView style={styles.form}>
         <TextInput 
           style={styles.input} 
