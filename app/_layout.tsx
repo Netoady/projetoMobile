@@ -16,7 +16,28 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        
+        {/*Adicionei o animation para garantir o efeito no Android */}
+        <Stack.Screen 
+          name="modal" 
+          options={{ 
+            presentation: 'modal', 
+            animation: 'slide_from_bottom', // Garante que ele suba por cima
+            title: 'Novo Cadastro',
+            headerShown: true // Importante para aparecer o botão de fechar no topo
+          }} 
+        />
+
+        {/* JÁ ADICIONE O DA NOVA ATIVIDADE: */}
+        <Stack.Screen 
+          name="modalTrilha" 
+          options={{ 
+            presentation: 'modal', 
+            animation: 'slide_from_bottom',
+            title: 'Nova Trilha',
+            headerShown: true 
+          }} 
+        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
