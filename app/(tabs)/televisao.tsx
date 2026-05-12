@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { useState } from 'react'; 
 import { StyleSheet, TouchableOpacity, Alert } from 'react-native'; 
+import AsyncStorage from '@react-native-async-storage/async-storage'; // IMPORTANTE
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
@@ -8,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
 import ModalNovela from '@/components/modals/modal'; 
+import NovelaListScreen from '@/components/listscreen/novelalistscreen'; // O NOVO COMPONENTE
 
 interface Novela {
   id: string;
@@ -18,17 +20,10 @@ interface Novela {
 }
 
 export default function TelevisionScreen() {
-  // CONTROLE DO MODAL - Estado para mostrar/esconder
   const [modalVisible, setModalVisible] = useState(false);
-
-  const [novelas, setNovelas] = useState<Novela[]>([
-    { id: '1', titulo: 'Tieta', anoLancamento: '1989', autor: 'Aguinaldo Silva', emissora: 'TV Globo' },
-    { id: '2', titulo: 'O Clone', anoLancamento: '2001', autor: 'Glória Perez', emissora: 'TV Globo' },
-    { id: '3', titulo: 'O Dono do Mundo', anoLancamento: '1991', autor: 'Gilberto Braga', emissora: 'TV Globo' },
-    { id: '4', titulo: 'Olho no Olho', anoLancamento: '1993', autor: 'Antônio Calmon', emissora: 'TV Globo' },
-    { id: '5', titulo: 'A Proxima Vitima', anoLancamento: '1995', autor: 'Silvio de Abreu', emissora: 'TV Globo' },
-  ]);
-
+  
+  // 1. Iniciamos vazio, pois o NovelaListScreen vai carregar os dados salvos
+  const [novelas, setNovelas] = useState<Novela[]>([]);
   const [selectedNovela, setSelectedNovela] = useState<any>(undefined);
 
   const openEditModal = (novela: any) => {
@@ -36,46 +31,42 @@ export default function TelevisionScreen() {
     setModalVisible(true);
   };
 
-  // Função Unificada para Salvar (Adicionar ou Editar)
-const handleSaveNovela = (nome: string, emissora: string, id?: number) => {
-  if (id && id > 0) {
-    // Lógica de Edição (U)
-    setNovelas(novelas.map(n => n.id === id.toString() ? { ...n, titulo: nome, emissora } : n));
-  } else {
-    // Lógica de Adição (C)
-    const nova: Novela = {
-      id: Math.random().toString(),
-      titulo: nome,
-      anoLancamento: '2026', // Valor padrão
-      autor: 'Desconhecido',
-      emissora,
-    };
-    setNovelas([...novelas, nova]);
-  }
-  setModalVisible(false);
-  setSelectedNovela(undefined); // Limpa seleção
-};
+  // 2. FUNÇÃO SALVAR (Baseada no Print 110816 do professor)
+  const handleSaveNovela = async (nome: string, emissora: string, id?: number) => {
+    let listaAtualizada;
+    
+    if (id && id > 0) {
+      // Lógica de Edição (U)
+      listaAtualizada = novelas.map(n => n.id === id.toString() ? { ...n, titulo: nome, emissora } : n);
+    } else {
+      // Lógica de Adição (C)
+      const nova: Novela = {
+        id: Math.random().toString(),
+        titulo: nome,
+        anoLancamento: '2026',
+        autor: 'Desconhecido',
+        emissora,
+      };
+      listaAtualizada = [...novelas, nova];
+    }
 
-// Função para Deletar (D)
-const handleDelete = (id: number) => {
-  setNovelas(novelas.filter(n => n.id !== id.toString()));
-  setModalVisible(false);
-  setSelectedNovela(undefined);
-};
+    setNovelas(listaAtualizada);
+    // Persistindo no AsyncStorage conforme o padrão do professor
+    await AsyncStorage.setItem('@NetoTV:novelas', JSON.stringify(listaAtualizada));
+    
+    setModalVisible(false);
+    setSelectedNovela(undefined);
+  };
 
-  // 3. FUNÇÃO PARA ADICIONAR: Recebe os dados do modal e atualiza a lista
-  const handleAddNovela = (nome: string, emissora: string, id?: number) => {
-    const novaNovela: Novela = {
-      id: id?.toString() || Math.random().toString(),
-      titulo: nome,
-      anoLancamento: '',
-      autor: '',
-      emissora,
-    };
-
-    setNovelas([...novelas, novaNovela]); // Adiciona à lista existente
-    setModalVisible(false); // Fecha o modal
-    Alert.alert("Sucesso", `${nome} foi cadastrada no acervo!`);
+  // 3. FUNÇÃO DELETAR (Baseada no Print 110851 do professor)
+  const handleDelete = async (id: number) => {
+    const listaRestante = novelas.filter(n => n.id !== id.toString());
+    
+    setNovelas(listaRestante);
+    await AsyncStorage.setItem('@NetoTV:novelas', JSON.stringify(listaRestante));
+    
+    setModalVisible(false);
+    setSelectedNovela(undefined);
   };
 
   return (
@@ -94,11 +85,16 @@ const handleDelete = (id: number) => {
           <HelloWave />
         </ThemedView>
 
-        {/* 4. MUDANÇA NO BOTÃO: Agora ele apenas abre o modal via estado */}
+        {/* COMPONENTE DE LÓGICA (GPS + LOAD DATA) */}
+        <NovelaListScreen setNovelas={setNovelas} />
+
         <ThemedView style={styles.stepContainer}>
           <TouchableOpacity 
             style={styles.button} 
-            onPress={() => setModalVisible(true)}
+            onPress={() => {
+              setSelectedNovela(undefined);
+              setModalVisible(true);
+            }}
           >
             <ThemedText type="defaultSemiBold" style={{ color: '#FFF' }}>
               + Registrar Nova Obra
@@ -121,16 +117,15 @@ const handleDelete = (id: number) => {
           </TouchableOpacity>
         ))}
 
-       {/* 5. CHAMADA DO COMPONENTE MODAL: Passando as props necessárias */}
-       <ModalNovela 
+        <ModalNovela 
           visible={modalVisible}
-          onAdd={handleAddNovela}
+          onAdd={handleSaveNovela} // Usando a função unificada com Async
           onCancel={() => {
             setModalVisible(false);
             setSelectedNovela(undefined);
           }}
-          onDelete={handleDelete} // Agora passa a função real, sem erro de "not implemented"
-          novela={selectedNovela}  // Passa a novela selecionada para o modal preencher os campos
+          onDelete={handleDelete} 
+          novela={selectedNovela}
         />
     </ParallaxScrollView>
     </ThemedView>
@@ -151,6 +146,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)'
   },
-  autorText: { fontSize: 14, opacity: 0.7, marginTop: 4 },
-  linkText: { color: '#A1CEDC', marginTop: 10, fontWeight: '600' }
+  autorText: { fontSize: 14, opacity: 0.7, marginTop: 4 }
 });
